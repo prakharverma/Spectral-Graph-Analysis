@@ -77,3 +77,13 @@ def get_objective_value(graph: Graph, cluster_nodes: dict):
 
     return objective_val
 
+
+if __name__ == '__main__':
+
+    # Testing the objective function
+    g = Graph.Graph()
+
+    edges = [(1, 2), (3, 4)]
+    g.add_edges(edges)
+
+    print(get_objective_value(g, {0: [1, 2, 3], 1: [4]}))
