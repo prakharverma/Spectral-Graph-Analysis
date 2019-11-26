@@ -1,5 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+from scipy import sparse
+import numpy as np
 
 
 class Graph:
@@ -16,7 +18,23 @@ class Graph:
         return self.g.number_of_nodes()
 
     def get_adjacency_matrix(self):
-        return self.g.adjacency()
+        return (nx.adjacency_matrix(self.g, nodelist=range(0,self.g.number_of_nodes())))
+
+    def get_custom_diagonal_matrix(self, adjacency):
+        diag_matrix = adjacency.sum(axis=1)
+        diag_matrix = np.array(diag_matrix.reshape((len(diag_matrix), )))
+        diag_matrix = diag_matrix[0]
+        diag_matrix = sparse.diags(diag_matrix)
+
+        return diag_matrix
+
+    def get_diagonal_matrix(self):
+        nodelist = list(self.g)
+        A = nx.to_scipy_sparse_matrix(self.g, nodelist=nodelist, format='csr')
+        n, m = A.shape
+        diags = A.sum(axis=1).flatten()
+        D = sparse.spdiags(diags.flatten(), [0], m, n, format='csr')
+        return D
 
     def get_graph(self):
         return self.g
@@ -37,3 +55,14 @@ class Graph:
 
     def get_neighbors(self, node):
         return self.g.neighbors(node)
+
+    def get_max_degree_elements(self, n):
+        degrees = self.g.degree
+        degree_dict = {}
+        for d in degrees:
+            degree_dict[d[0]] = d[1]
+
+        sorted_nodes_distance = [k for k in
+                                 sorted(degree_dict, key=degree_dict.get, reverse=True)]
+
+        return sorted_nodes_distance[:n]

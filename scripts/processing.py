@@ -1,68 +1,115 @@
-from scipy.sparse import linalg
-import numpy as np
-from sklearn.cluster import KMeans
-import math
-from sklearn.decomposition import TruncatedSVD, pca
-
 import Spectral_Graph_Analysis.scripts.utility as utils
+import Spectral_Graph_Analysis.scripts.cluster_optimize as optimize
+import Spectral_Graph_Analysis.scripts.clustering as clustering
+import copy
 
 if __name__ == '__main__':
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Parameteres
-    txt_file = "../../graphs_processed/ca-GrQc.txt"
-    output_file = "ca-GrQc.txt"
+    txt_file = "../../graphs_processed/Oregon-1.txt"
+    output_file = "../../output/Oregon-1.output"
 
-    normalized_laplacian = True
+    normalized_laplacian = False
 
     eigen_vectors = True
-    normalize_eigen_vectors = True
+    normalize_eigen_vectors = False
     truncated_SVD = False
-
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     graph, k, header = utils.create_graph_from_txt(txt_file)
 
-    print("Computing Laplacian...\n")
-    laplacian = graph.get_laplacian(normalized=normalized_laplacian)
-    laplacian = laplacian.asfptype()
-
-    if eigen_vectors:
-        print("Computing Eigen values...\n")
-        eigen_values, eigen_vectors = linalg.eigs(laplacian, k=k, which="LR")
-        eigen_vectors = np.real(eigen_vectors)
-
-        # Normalizing the row. According to Luxburg06_TR.pdf
-        if normalize_eigen_vectors:
-            # FIXME : Optimize if it works
-            for i in range(eigen_vectors.shape[0]):
-                s = math.sqrt(sum(eigen_vectors[i]**2))
-                for j in range(eigen_vectors.shape[1]):
-                    eigen_vectors[i, j] = eigen_vectors[i, j] / s
-
-    if truncated_SVD:
-        svd = TruncatedSVD(n_components=k)
-        eigen_vectors = svd.fit_transform(laplacian)
-
-    print("Perform k-means...\n")
-    k = KMeans(n_clusters=k)
-    k.fit(eigen_vectors)
-
-    print("Finding the nodes cluster...\n")
-    results = k.labels_
-    cluster_nodes = {}
-    for node, cluster in enumerate(results):
-        if cluster not in cluster_nodes.keys():
-            cluster_nodes[cluster] = [node]
-        else:
-            cluster_nodes[cluster].append(node)
-
-    for c_key in cluster_nodes.keys():
-        print(f"Cluster {c_key} : {len(cluster_nodes[c_key])}")
-
-    print("\nCreating a output file...\n")
-    utils.create_output_file(cluster_nodes, output_file, header)
+    cluster_nodes, cluster_centroids, transformed_x = clustering.perform_clustering(graph,
+                                                                                    k,
+                                                                                    normalized_laplacian=normalized_laplacian,
+                                                                                    eigen_vectors=eigen_vectors,
+                                                                                    normalize_eigen_vectors=normalize_eigen_vectors,
+                                                                                    truncated_SVD=truncated_SVD)
 
     print("Calculating objective function values...")
     objective_val = utils.get_objective_value(graph, cluster_nodes)
     print(objective_val)
+
+    # GREDDY ALGORITHM BELOW
+    # for _ in range(2):
+    #     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #     # Optimizing by finding nodes with maximum edges in the other cluster
+    #     previous_objective_val = objective_val
+    #     current_objective = -1
+    #     optimize_cluster_node = copy.deepcopy(cluster_nodes)
+    #     while current_objective < previous_objective_val:
+    #
+    #         cluster_nodes = copy.deepcopy(optimize_cluster_node)
+    #         if current_objective != -1:
+    #             previous_objective_val = current_objective
+    #             objective_val = current_objective
+    #         else:
+    #             previous_objective_val = objective_val
+    #
+    #         biggest_cluster_nodes, biggest_cluster_id = optimize.get_biggest_cluster_nodes(optimize_cluster_node)
+    #
+    #         points_to_move = optimize.get_nodes_with_more_outward_edges(graph, biggest_cluster_nodes)
+    #
+    #         # putting the nodes into nodes to move and removing them from optimize cluster
+    #         nodes_to_move_id = []
+    #         for pnt in points_to_move:
+    #             nodes_to_move_id.append(pnt[0])
+    #             if pnt[0] in optimize_cluster_node[biggest_cluster_id]:
+    #                 optimize_cluster_node[biggest_cluster_id].remove(pnt[0])
+    #
+    #         if biggest_cluster_id == 0:
+    #             optimize_cluster_node[1] += nodes_to_move_id
+    #         else:
+    #             optimize_cluster_node[0] += nodes_to_move_id
+    #
+    #         for c_key in optimize_cluster_node.keys():
+    #             print(f"Cluster {c_key} : {len(optimize_cluster_node[c_key])}")
+    #
+    #         print("\nCalculating objective function values...")
+    #         current_objective = utils.get_objective_value(graph, optimize_cluster_node)
+    #         print(current_objective)
+    #
+    #     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #     # Optimizing by finding nodes with minimum edges inside cluster
+    #     previous_objective_val = objective_val
+    #     current_objective = -1
+    #     optimize_cluster_node = copy.deepcopy(cluster_nodes)
+    #     while current_objective < previous_objective_val:
+    #         cluster_nodes = copy.deepcopy(optimize_cluster_node.copy())
+    #         if current_objective != -1:
+    #             previous_objective_val = current_objective
+    #             objective_val = current_objective
+    #         else:
+    #             previous_objective_val = objective_val
+    #
+    #         biggest_cluster_nodes, biggest_cluster_id = optimize.get_biggest_cluster_nodes(optimize_cluster_node)
+    #
+    #         points_to_move = optimize.get_points_with_min_inside_edges(graph, biggest_cluster_nodes, 100)
+    #
+    #         nodes_to_move_id = []
+    #         for pnt in points_to_move:
+    #             nodes_to_move_id.append(pnt[0])
+    #             if pnt[0] in optimize_cluster_node[biggest_cluster_id]:
+    #                 optimize_cluster_node[biggest_cluster_id].remove(pnt[0])
+    #
+    #         if biggest_cluster_id == 0:
+    #             optimize_cluster_node[1] += nodes_to_move_id
+    #         else:
+    #             optimize_cluster_node[0] += nodes_to_move_id
+    #
+    #         for c_key in optimize_cluster_node.keys():
+    #             print(f"Cluster {c_key} : {len(optimize_cluster_node[c_key])}")
+    #
+    #         print("\nCalculating objective function values...")
+    #         current_objective = utils.get_objective_value(graph, optimize_cluster_node)
+    #         print(current_objective)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    print("Creating a output file...\n")
+    utils.create_output_file(cluster_nodes, output_file, header)
+
+    print("Final objective value")
+    print(utils.get_objective_value(graph, cluster_nodes))
