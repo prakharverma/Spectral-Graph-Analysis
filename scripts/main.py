@@ -9,9 +9,9 @@ if __name__ == '__main__':
     txt_file = "../../graphs_processed/ca-GrQc.txt"
     output_file = "../../output/ca-GrQc.output"
 
-    laplacian_algo = "UL"  # {Symmetric Normalized Laplacian=SNL; Unnormalized Laplacian=UL}
+    laplacian_algo = "UL"  # {Symmetric Normalized Laplacian=SNL; Unnormalized Laplacian=UL; Random Walk Laplacian=RWL}
     eigen_vectors = True
-    normalize_eigen_vectors = False
+    normalize_eigen_vectors = True
 
     truncated_SVD = False
 
@@ -22,11 +22,11 @@ if __name__ == '__main__':
     graph, k, header = utils.create_graph_from_txt(txt_file)
 
     cluster_nodes, cluster_centroids, transformed_x = clustering.perform_spectral_clustering(graph,
-                                                                                            k,
-                                                                                            calculate_eigen_vectors=eigen_vectors,
-                                                                                            normalize_eigen_vectors=normalize_eigen_vectors,
-                                                                                            truncated_SVD=truncated_SVD,
-                                                                                            laplacian_algo=laplacian_algo)
+                                                                                             k,
+                                                                                             calculate_eigen_vectors=eigen_vectors,
+                                                                                             normalize_eigen_vectors=normalize_eigen_vectors,
+                                                                                             truncated_SVD=truncated_SVD,
+                                                                                             laplacian_algo=laplacian_algo)
 
     if calculate_objective_value:
         print("Calculating objective function values...")
