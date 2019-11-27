@@ -1,7 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy import sparse
-import numpy as np
 
 
 class Graph:
@@ -18,15 +17,7 @@ class Graph:
         return self.g.number_of_nodes()
 
     def get_adjacency_matrix(self):
-        return (nx.adjacency_matrix(self.g, nodelist=range(0,self.g.number_of_nodes())))
-
-    def get_custom_diagonal_matrix(self, adjacency):
-        diag_matrix = adjacency.sum(axis=1)
-        diag_matrix = np.array(diag_matrix.reshape((len(diag_matrix), )))
-        diag_matrix = diag_matrix[0]
-        diag_matrix = sparse.diags(diag_matrix)
-
-        return diag_matrix
+        return nx.adjacency_matrix(self.g, nodelist=range(0,self.g.number_of_nodes()))
 
     def get_diagonal_matrix(self):
         nodelist = list(self.g)
@@ -46,12 +37,6 @@ class Graph:
 
     def get_nodes(self):
         return self.g.nodes
-
-    def get_laplacian(self, normalized=False):
-        if normalized:
-            return nx.normalized_laplacian_matrix(self.g)
-
-        return nx.laplacian_matrix(self.g)
 
     def get_neighbors(self, node):
         return self.g.neighbors(node)

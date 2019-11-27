@@ -1,7 +1,7 @@
-from Spectral_Graph_Analysis.scripts.Graph import Graph
-from scipy.sparse import linalg
 import math
-from sklearn.cluster import KMeans
+import copy
+
+import utility as utils
 
 
 def get_cluster(cluster_info, node):
@@ -68,3 +68,82 @@ def get_nodes_with_more_outward_edges(graph, points_list):
             same_cluster_nodes.remove(pnt)
 
     return [(k, nodes_connections[k]) for k in nodes_connections.keys()]
+
+
+def greedy_algorithms(objective_val, cluster_nodes, graph, iters=2):
+    for _ in range(iters):
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Optimizing by finding nodes with maximum edges in the other cluster
+        previous_objective_val = objective_val
+        current_objective = -1
+        optimize_cluster_node = copy.deepcopy(cluster_nodes)
+        while current_objective < previous_objective_val:
+
+            cluster_nodes = copy.deepcopy(optimize_cluster_node)
+            if current_objective != -1:
+                previous_objective_val = current_objective
+                objective_val = current_objective
+            else:
+                previous_objective_val = objective_val
+
+            biggest_cluster_nodes, biggest_cluster_id = get_biggest_cluster_nodes(optimize_cluster_node)
+
+            points_to_move = get_nodes_with_more_outward_edges(graph, biggest_cluster_nodes)
+
+            # putting the nodes into nodes to move and removing them from optimize cluster
+            nodes_to_move_id = []
+            for pnt in points_to_move:
+                nodes_to_move_id.append(pnt[0])
+                if pnt[0] in optimize_cluster_node[biggest_cluster_id]:
+                    optimize_cluster_node[biggest_cluster_id].remove(pnt[0])
+
+            if biggest_cluster_id == 0:
+                optimize_cluster_node[1] += nodes_to_move_id
+            else:
+                optimize_cluster_node[0] += nodes_to_move_id
+
+            for c_key in optimize_cluster_node.keys():
+                print(f"Cluster {c_key} : {len(optimize_cluster_node[c_key])}")
+
+            print("\nCalculating objective function values...")
+            current_objective = utils.get_objective_value(graph, optimize_cluster_node)
+            print(current_objective)
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Optimizing by finding nodes with minimum edges inside cluster
+        previous_objective_val = objective_val
+        current_objective = -1
+        optimize_cluster_node = copy.deepcopy(cluster_nodes)
+        while current_objective < previous_objective_val:
+            cluster_nodes = copy.deepcopy(optimize_cluster_node.copy())
+            if current_objective != -1:
+                previous_objective_val = current_objective
+                objective_val = current_objective
+            else:
+                previous_objective_val = objective_val
+
+            biggest_cluster_nodes, biggest_cluster_id = get_biggest_cluster_nodes(optimize_cluster_node)
+
+            points_to_move = get_points_with_min_inside_edges(graph, biggest_cluster_nodes, 100)
+
+            nodes_to_move_id = []
+            for pnt in points_to_move:
+                nodes_to_move_id.append(pnt[0])
+                if pnt[0] in optimize_cluster_node[biggest_cluster_id]:
+                    optimize_cluster_node[biggest_cluster_id].remove(pnt[0])
+
+            if biggest_cluster_id == 0:
+                optimize_cluster_node[1] += nodes_to_move_id
+            else:
+                optimize_cluster_node[0] += nodes_to_move_id
+
+            for c_key in optimize_cluster_node.keys():
+                print(f"Cluster {c_key} : {len(optimize_cluster_node[c_key])}")
+
+            print("\nCalculating objective function values...")
+            current_objective = utils.get_objective_value(graph, optimize_cluster_node)
+            print(current_objective)
+
+    return cluster_nodes
