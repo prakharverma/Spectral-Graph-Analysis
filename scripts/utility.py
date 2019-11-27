@@ -1,4 +1,4 @@
-from Spectral_Graph_Analysis.scripts import Graph
+import Graph
 
 
 def create_graph_from_txt(txt_file_path: str):
