@@ -6,12 +6,12 @@ if __name__ == '__main__':
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Parameteres
-    txt_file = "../../graphs_processed/ca-GrQc.txt"
-    output_file = "../../output/ca-GrQc.output"
+    txt_file = "../../graphs_processed/web-NotreDame.txt"
+    output_file = "../../output/web-NotreDame.output"
 
-    laplacian_algo = "UL"  # {Symmetric Normalized Laplacian=SNL; Unnormalized Laplacian=UL; Random Walk Laplacian=RWL}
+    laplacian_algo = "UL"  # {Symmetric Normalized Laplacian=SNL; Unnormalized Laplacian=UL; Random Walk Laplacian=RWL, Shi-Mallik: SM}
     eigen_vectors = True
-    normalize_eigen_vectors = True
+    normalize_eigen_vectors = False
 
     truncated_SVD = False
 

@@ -15,7 +15,7 @@ def get_custom_diagonal_matrix(adjacency, laplacian_algo):
 
     if laplacian_algo == "SNL":
         diag_matrix = sparse.diags(np.power(diag_matrix, -.5))
-    elif laplacian_algo == "UL":
+    elif laplacian_algo == "UL" or laplacian_algo == "SM":
         diag_matrix = sparse.diags(diag_matrix)
     elif laplacian_algo == "RWL":
         diag_matrix = sparse.diags(1/diag_matrix)
@@ -33,7 +33,7 @@ def calculate_laplacian(graph: Graph, laplacian_algo):
     if laplacian_algo == "RWL":
         laplacian = sparse.identity(adjacency_matrix.shape[0]) - (diagonal_matrix * adjacency_matrix)
 
-    elif laplacian_algo == "UL":
+    elif laplacian_algo == "UL" or laplacian_algo == "SM":
         laplacian = diagonal_matrix - adjacency_matrix
 
     return laplacian, adjacency_matrix, diagonal_matrix
@@ -65,7 +65,7 @@ def perform_spectral_clustering(graph: Graph,
                                 truncated_SVD=False,
                                 laplacian_algo="UL"):
 
-    assert laplacian_algo in ["UL", "SNL", "RWL"]
+    assert laplacian_algo in ["UL", "SNL", "RWL", "SM"]
 
     print("Computing Laplacian...\n")
 
@@ -73,7 +73,12 @@ def perform_spectral_clustering(graph: Graph,
 
     if calculate_eigen_vectors:
         print("Computing Eigen values...\n")
-        eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=k, which="SR")
+        if laplacian_algo == "SM":
+            eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=k, which="SR")
+
+        else:
+            eigen_values, eigen_vectors = linalg.eigs(laplacian, k=k, which="SR")
+
         eigen_vectors = eigen_vectors.real
 
     elif truncated_SVD:
@@ -81,8 +86,7 @@ def perform_spectral_clustering(graph: Graph,
         eigen_vectors = svd.fit_transform(laplacian)
 
     if normalize_eigen_vectors:
-        #eigen_vectors = eigen_vectors.T / np.sqrt(np.sum(np.square(eigen_vectors), axis=1))
-        eigen_vectors = normalize(eigen_vectors, norm="l1", axis=1)
+        eigen_vectors = normalize(eigen_vectors, norm="l2", axis=1)
 
     print("Perform k-means...\n")
 
