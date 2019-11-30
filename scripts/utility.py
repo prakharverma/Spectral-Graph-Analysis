@@ -58,24 +58,31 @@ def create_output_file(data: dict, output_path: str, header: str = None):
     return True
 
 
-def get_objective_value(graph: Graph, cluster_nodes: dict):
+def get_objective_value(cluster_nodes: dict, neighbor_list):
     clusters = cluster_nodes.keys()
     objective_val = 0
 
     # FIXME : Optimize this
     for c in clusters:
         numerator = 0
-        all_nodes_cluster = cluster_nodes[c]
+        all_nodes_cluster = set(cluster_nodes[c])
 
         for val in all_nodes_cluster:
-            neighbors = graph.get_neighbors(val)
-            for n in neighbors:
-                if n not in all_nodes_cluster:
-                    numerator += 1
+            neighbors = set(neighbor_list[val])
+            numerator += len(neighbors-all_nodes_cluster)
 
         objective_val += (numerator/len(all_nodes_cluster))
 
     return objective_val
+
+
+def get_neighbor_list(graph: Graph):
+    all_nodes = graph.get_nodes()
+    neighbors = {}
+    for node in all_nodes:
+        neighbors[node] = graph.get_neighbors(node)
+
+    return neighbors
 
 
 def create_graph_from_edges(edges_list):

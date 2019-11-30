@@ -126,7 +126,7 @@ def greedy_algorithms(objective_val, cluster_nodes, graph, iters=2):
 
             biggest_cluster_nodes, biggest_cluster_id = get_biggest_cluster_nodes(optimize_cluster_node)
 
-            points_to_move = get_points_with_min_inside_edges(graph, biggest_cluster_nodes, 100)
+            points_to_move = get_points_with_min_inside_edges(graph, biggest_cluster_nodes, 1)
 
             nodes_to_move_id = []
             for pnt in points_to_move:

@@ -60,9 +60,7 @@ def kmeans(vals, k, intialize_kmeans=False, graph=None, eigen_vectors=None):
 
 def perform_spectral_clustering(graph: Graph,
                                 k: int,
-                                calculate_eigen_vectors=True,
                                 normalize_eigen_vectors=True,
-                                truncated_SVD=False,
                                 laplacian_algo="UL"):
 
     assert laplacian_algo in ["UL", "SNL", "RWL", "SM"]
@@ -71,19 +69,14 @@ def perform_spectral_clustering(graph: Graph,
 
     laplacian, adjacency_matrix, diagonal_matrix = calculate_laplacian(graph, laplacian_algo)
 
-    if calculate_eigen_vectors:
-        print("Computing Eigen values...\n")
-        if laplacian_algo == "SM":
-            eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=k, which="SR")
+    print("Computing Eigen values...\n")
+    if laplacian_algo == "SM":
+        eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=k, which="SR")
 
-        else:
-            eigen_values, eigen_vectors = linalg.eigs(laplacian, k=k, which="SR")
+    else:
+        eigen_values, eigen_vectors = linalg.eigs(laplacian, k=k, which="SR")
 
-        eigen_vectors = eigen_vectors.real
-
-    elif truncated_SVD:
-        svd = TruncatedSVD(n_components=k)
-        eigen_vectors = svd.fit_transform(laplacian)
+    eigen_vectors = eigen_vectors.real
 
     if normalize_eigen_vectors:
         eigen_vectors = normalize(eigen_vectors, norm="l2", axis=1)
