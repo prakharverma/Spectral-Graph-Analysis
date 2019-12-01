@@ -70,7 +70,33 @@ def get_nodes_with_more_outward_edges(graph, points_list):
     return [(k, nodes_connections[k]) for k in nodes_connections.keys()]
 
 
-def greedy_algorithms(objective_val, cluster_nodes, graph, iters=2):
+def find_cluster_with_min_outward_edges(graph, node, cluster_nodes):
+    neighbors = graph.get_neighbors(node)
+    min_outward_edge = math.inf
+    best_cluster = None
+
+    for c in cluster_nodes.keys():
+        cluster_outward_edge = len(set(copy.deepcopy(neighbors)) - set(copy.deepcopy(cluster_nodes[c])))
+        if cluster_outward_edge < min_outward_edge:
+            best_cluster = c
+
+    return best_cluster
+
+
+def find_cluster_with_min_inside_edges(graph, node, cluster_nodes):
+    neighbors = graph.get_neighbors(node)
+    min_inward_edge = math.inf
+    best_cluster = None
+
+    for c in cluster_nodes.keys():
+        cluster_outward_edge = len(set(copy.deepcopy(neighbors)).intersection(set(copy.deepcopy(cluster_nodes[c]))))
+        if cluster_outward_edge < min_inward_edge:
+            best_cluster = c
+
+    return best_cluster
+
+
+def greedy_algorithms(objective_val, cluster_nodes, graph, neighbor_list, iters=2):
     for _ in range(iters):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Optimizing by finding nodes with maximum edges in the other cluster
@@ -91,22 +117,19 @@ def greedy_algorithms(objective_val, cluster_nodes, graph, iters=2):
             points_to_move = get_nodes_with_more_outward_edges(graph, biggest_cluster_nodes)
 
             # putting the nodes into nodes to move and removing them from optimize cluster
-            nodes_to_move_id = []
             for pnt in points_to_move:
-                nodes_to_move_id.append(pnt[0])
+                # Find the appropriate cluster
+                new_cluster_id = find_cluster_with_min_outward_edges(graph, pnt[0], cluster_nodes)
+                optimize_cluster_node[new_cluster_id].append(pnt[0])
+
                 if pnt[0] in optimize_cluster_node[biggest_cluster_id]:
                     optimize_cluster_node[biggest_cluster_id].remove(pnt[0])
-
-            if biggest_cluster_id == 0:
-                optimize_cluster_node[1] += nodes_to_move_id
-            else:
-                optimize_cluster_node[0] += nodes_to_move_id
 
             for c_key in optimize_cluster_node.keys():
                 print(f"Cluster {c_key} : {len(optimize_cluster_node[c_key])}")
 
             print("\nCalculating objective function values...")
-            current_objective = utils.get_objective_value(graph, optimize_cluster_node)
+            current_objective = utils.get_objective_value(optimize_cluster_node, copy.deepcopy(neighbor_list))
             print(current_objective)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,22 +151,19 @@ def greedy_algorithms(objective_val, cluster_nodes, graph, iters=2):
 
             points_to_move = get_points_with_min_inside_edges(graph, biggest_cluster_nodes, 1)
 
-            nodes_to_move_id = []
             for pnt in points_to_move:
-                nodes_to_move_id.append(pnt[0])
+                # Find the appropriate cluster
+                new_cluster_id = find_cluster_with_min_inside_edges(graph, pnt[0], cluster_nodes)
+                optimize_cluster_node[new_cluster_id].append(pnt[0])
+
                 if pnt[0] in optimize_cluster_node[biggest_cluster_id]:
                     optimize_cluster_node[biggest_cluster_id].remove(pnt[0])
-
-            if biggest_cluster_id == 0:
-                optimize_cluster_node[1] += nodes_to_move_id
-            else:
-                optimize_cluster_node[0] += nodes_to_move_id
 
             for c_key in optimize_cluster_node.keys():
                 print(f"Cluster {c_key} : {len(optimize_cluster_node[c_key])}")
 
             print("\nCalculating objective function values...")
-            current_objective = utils.get_objective_value(graph, optimize_cluster_node)
+            current_objective = utils.get_objective_value(optimize_cluster_node, copy.deepcopy(neighbor_list))
             print(current_objective)
 
     return cluster_nodes

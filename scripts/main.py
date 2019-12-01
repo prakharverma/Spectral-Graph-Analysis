@@ -37,7 +37,7 @@ def process_file(txt_file_path, output_dir, laplacian_algo, normalize_eigen_vect
 
                 if greedy:
                     print("Executing Greedy Algorithm...")
-                    cluster_nodes = optimize.greedy_algorithms(objective_val, cluster_nodes, graph, iters=2)
+                    cluster_nodes = optimize.greedy_algorithms(objective_val, cluster_nodes, graph, copy.deepcopy(neighbor_list), iters=2)
 
                     if calculate_objective_value:
                         print("Calculating final objective value")
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     laplacian_algo = ["RWL", "SNL", "SM", "UL"]
     normalize_eigen_vectors = [False, True]
-    perform_greedy_algo = [False]
+    perform_greedy_algo = [True, False]
     calculate_objective_value = True
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
