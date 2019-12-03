@@ -1,11 +1,12 @@
 from sklearn.cluster import KMeans
-from sklearn.decomposition import TruncatedSVD
 from scipy.sparse import linalg
 from sklearn.preprocessing import normalize
 import numpy as np
 from scipy import sparse
+import copy
 
 from Graph import Graph
+import utility as utils
 
 
 def get_custom_diagonal_matrix(adjacency, laplacian_algo):
@@ -60,10 +61,15 @@ def kmeans(vals, k, intialize_kmeans=False, graph=None, eigen_vectors=None):
 
 def perform_spectral_clustering(graph: Graph,
                                 k: int,
+                                neighbor_list,
                                 normalize_eigen_vectors=True,
                                 laplacian_algo="UL"):
 
     assert laplacian_algo in ["UL", "SNL", "RWL", "SM"]
+
+    # FIXME : Change 4
+    eigens_to_calculate = 20
+    initial_eigens_fixed = 2
 
     print("Computing Laplacian...\n")
 
@@ -71,10 +77,12 @@ def perform_spectral_clustering(graph: Graph,
 
     print("Computing Eigen values...\n")
     if laplacian_algo == "SM":
-        eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=k, which="SR")
+        # FIXME : Change 3
+        eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=eigens_to_calculate, which="SR")
 
     else:
-        eigen_values, eigen_vectors = linalg.eigs(laplacian, k=k, which="SR")
+        # FIXME : Change 1
+        eigen_values, eigen_vectors = linalg.eigs(laplacian, k=eigens_to_calculate, which="SM")
 
     eigen_vectors = eigen_vectors.real
 
@@ -83,14 +91,47 @@ def perform_spectral_clustering(graph: Graph,
 
     print("Perform k-means...\n")
 
-    results, cluster_centroids, transformed_x = kmeans(eigen_vectors, k)
+    #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # FIXME : Change 1
+    best_obj_val = 99999999
+    cluster_nodes, cluster_centroids, transformed_x = None, None, None
+    for _ in range(100):
+        eigen_vects = copy.deepcopy(eigen_vectors)
+        random_eigen_index = np.random.randint(initial_eigens_fixed, eigens_to_calculate, k)
+        eigen_vec = np.zeros((graph.get_nodes_count(), k))
 
-    print("Finding the nodes cluster...\n")
-    cluster_nodes = {}
-    for node, cluster in enumerate(results):
-        if cluster not in cluster_nodes.keys():
-            cluster_nodes[cluster] = [node]
-        else:
-            cluster_nodes[cluster].append(node)
+        for h in range(initial_eigens_fixed):
+            eigen_vec[:, h] = eigen_vects[:, h]
+
+        for h in range(initial_eigens_fixed, k):
+            eigen_vec[:, h] = eigen_vects[:, random_eigen_index[h]]
+
+        t_results, t_cluster_centroids, t_transformed_x = kmeans(eigen_vec, k)
+
+        cluster_nodes_t = {}
+        for node, cluster in enumerate(t_results):
+            if cluster not in cluster_nodes_t.keys():
+                cluster_nodes_t[cluster] = [node]
+            else:
+                cluster_nodes_t[cluster].append(node)
+
+        obj_val = utils.get_objective_value(cluster_nodes_t, copy.deepcopy(neighbor_list))
+
+        if obj_val < best_obj_val:
+            best_obj_val = obj_val
+            cluster_nodes = cluster_nodes_t
+            cluster_centroids = t_cluster_centroids
+            transformed_x = t_transformed_x
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # results, cluster_centroids, transformed_x = kmeans(eigen_vectors, k)
+
+    # print("Finding the nodes cluster...\n")
+    # cluster_nodes = {}
+    # for node, cluster in enumerate(results):
+    #     if cluster not in cluster_nodes.keys():
+    #         cluster_nodes[cluster] = [node]
+    #     else:
+    #         cluster_nodes[cluster].append(node)
 
     return cluster_nodes, cluster_centroids, transformed_x

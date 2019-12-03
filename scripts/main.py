@@ -27,7 +27,8 @@ def process_file(txt_file_path, output_dir, laplacian_algo, normalize_eigen_vect
                 cluster_nodes, cluster_centroids, transformed_x = clustering.perform_spectral_clustering(graph,
                                                                                                          k,
                                                                                                          normalize_eigen_vectors=normalize,
-                                                                                                         laplacian_algo=lap_algo)
+                                                                                                         laplacian_algo=lap_algo,
+                                                                                                         neighbor_list=neighbor_list)
 
                 objective_val = -1
                 if calculate_objective_value:
@@ -56,12 +57,12 @@ if __name__ == '__main__':
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Parameteres
-    txt_file = "../../graphs_processed/ca-GrQc.txt"
-    output_dir = "../../output/ca-GrQc"
+    txt_file = "../../graphs_processed/Oregon-1.txt"
+    output_dir = "../../output/Oregon-1"
 
-    laplacian_algo = ["RWL", "SNL", "SM", "UL"]
-    normalize_eigen_vectors = [False, True]
-    perform_greedy_algo = [True, False]
+    laplacian_algo = ["UL"]
+    normalize_eigen_vectors = [False]
+    perform_greedy_algo = [False]
     calculate_objective_value = True
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
