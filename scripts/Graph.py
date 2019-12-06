@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy import sparse
+from scipy.sparse import lil_matrix
 
 
 class Graph:
@@ -17,7 +18,13 @@ class Graph:
         return self.g.number_of_nodes()
 
     def get_adjacency_matrix(self):
-        return nx.adjacency_matrix(self.g, nodelist=range(0,self.g.number_of_nodes()))
+        adj_matrix = lil_matrix((self.get_nodes_count(), self.get_nodes_count()))
+        for edge in self.get_edges():
+            adj_matrix[edge[0], edge[1]] = 1
+            adj_matrix[edge[1], edge[0]] = 1
+
+        return adj_matrix
+        # return nx.adjacency_matrix(self.g, nodelist=range(0, self.g.number_of_nodes()))
 
     def get_diagonal_matrix(self):
         nodelist = list(self.g)
@@ -51,3 +58,6 @@ class Graph:
                                  sorted(degree_dict, key=degree_dict.get, reverse=True)]
 
         return sorted_nodes_distance[:n]
+
+    def get_edges(self):
+        return self.g.edges

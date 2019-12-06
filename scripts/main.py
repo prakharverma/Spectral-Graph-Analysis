@@ -5,7 +5,15 @@ import os
 import copy
 
 
-def process_file(txt_file_path, output_dir, laplacian_algo, normalize_eigen_vectors, perform_greedy_algo, calculate_objective_value=False):
+def process_file(txt_file_path,
+                 output_dir,
+                 laplacian_algo,
+                 normalize_eigen_vectors,
+                 perform_greedy_algo,
+                 calculate_objective_value=False,
+                 n_kmeans=1,
+                 eigens_to_calculate=-1,
+                 fixed_eigens=-1):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -15,6 +23,12 @@ def process_file(txt_file_path, output_dir, laplacian_algo, normalize_eigen_vect
 
     graph, k, header = utils.create_graph_from_txt(txt_file_path)
     neighbor_list = utils.get_neighbor_list(graph)
+
+    if eigens_to_calculate == -1:
+        eigens_to_calculate = k
+
+    if fixed_eigens == -1:
+        fixed_eigens = k
 
     file_name = txt_file_path.split("/")[-1].split(".")[0]
 
@@ -28,7 +42,11 @@ def process_file(txt_file_path, output_dir, laplacian_algo, normalize_eigen_vect
                                                                                                          k,
                                                                                                          normalize_eigen_vectors=normalize,
                                                                                                          laplacian_algo=lap_algo,
-                                                                                                         neighbor_list=neighbor_list)
+                                                                                                         neighbor_list=neighbor_list,
+                                                                                                         n_kmeans=n_kmeans,
+                                                                                                         eigens_calculate=eigens_to_calculate,
+                                                                                                         fixed_eigens=fixed_eigens
+                                                                                                         )
 
                 objective_val = -1
                 if calculate_objective_value:
@@ -54,16 +72,34 @@ def process_file(txt_file_path, output_dir, laplacian_algo, normalize_eigen_vect
 
 
 if __name__ == '__main__':
-
+    import time
+    start_time = time.time()
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Parameteres
-    txt_file = "../../graphs_processed/Oregon-1.txt"
-    output_dir = "../../output/Oregon-1"
+    txt_file = "../../graphs_processed/soc-Epinions1.txt"
+    output_dir = "../../output/soc-Epinions1_test"
 
-    laplacian_algo = ["UL"]
-    normalize_eigen_vectors = [False]
-    perform_greedy_algo = [False]
-    calculate_objective_value = True
+    laplacian_algo = ["SM", "SNL", "RWL", "UL"]  # SM, RWL, UL, SNL
+    normalize_eigen_vectors = [False, True]  # True, False
+    perform_greedy_algo = [False, True]  # True, False
+    calculate_objective_value = True  # True, False
+
+    n_kmeans = 1
+    eigens_to_calculate = -1  # -1 means to calculate k eigen values
+    fixed_eigens = -1  # -1 means to set this to k
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    process_file(txt_file, output_dir, laplacian_algo, normalize_eigen_vectors, perform_greedy_algo, calculate_objective_value)
+    process_file(txt_file,
+                 output_dir,
+                 laplacian_algo,
+                 normalize_eigen_vectors,
+                 perform_greedy_algo,
+                 calculate_objective_value,
+                 n_kmeans,
+                 eigens_to_calculate,
+                 fixed_eigens
+                 )
+
+    print(f"Time Taken : {round(time.time() - start_time,3)} sec")
+

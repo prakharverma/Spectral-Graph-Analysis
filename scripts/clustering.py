@@ -50,7 +50,7 @@ def kmeans(vals, k, intialize_kmeans=False, graph=None, eigen_vectors=None):
         kmeans = KMeans(n_clusters=k, init=kmeans_initial, random_state=1)
 
     else:
-        kmeans = KMeans(n_clusters=k)
+        kmeans = KMeans(n_clusters=k, n_init=20)
 
     results = kmeans.fit_predict(vals)
     cluster_centroids = kmeans.cluster_centers_
@@ -63,13 +63,12 @@ def perform_spectral_clustering(graph: Graph,
                                 k: int,
                                 neighbor_list,
                                 normalize_eigen_vectors=True,
-                                laplacian_algo="UL"):
+                                laplacian_algo="UL",
+                                n_kmeans=1,
+                                eigens_calculate=1,
+                                fixed_eigens=1):
 
     assert laplacian_algo in ["UL", "SNL", "RWL", "SM"]
-
-    # FIXME : Change 4
-    eigens_to_calculate = 20
-    initial_eigens_fixed = 2
 
     print("Computing Laplacian...\n")
 
@@ -77,34 +76,36 @@ def perform_spectral_clustering(graph: Graph,
 
     print("Computing Eigen values...\n")
     if laplacian_algo == "SM":
-        # FIXME : Change 3
-        eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=eigens_to_calculate, which="SR")
+        eigen_values, eigen_vectors = linalg.eigs(laplacian, M=diagonal_matrix, k=eigens_calculate, which="SR")
 
     else:
-        # FIXME : Change 1
-        eigen_values, eigen_vectors = linalg.eigs(laplacian, k=eigens_to_calculate, which="SM")
+        eigen_values, eigen_vectors = linalg.eigs(laplacian, k=eigens_calculate, which="SR")
 
     eigen_vectors = eigen_vectors.real
+    sorted_eigen_values = eigen_values.argsort()
+    eigen_vectors = eigen_vectors[:, sorted_eigen_values[::]]
 
     if normalize_eigen_vectors:
         eigen_vectors = normalize(eigen_vectors, norm="l2", axis=1)
 
     print("Perform k-means...\n")
 
-    #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # FIXME : Change 1
-    best_obj_val = 99999999
+    # FIXME : Optimize later
+    best_obj_val = 99999
     cluster_nodes, cluster_centroids, transformed_x = None, None, None
-    for _ in range(100):
+    for _ in range(n_kmeans):
         eigen_vects = copy.deepcopy(eigen_vectors)
-        random_eigen_index = np.random.randint(initial_eigens_fixed, eigens_to_calculate, k)
+        if eigens_calculate > fixed_eigens:
+            random_eigen_index = np.random.randint(fixed_eigens, eigens_calculate, k)
+
         eigen_vec = np.zeros((graph.get_nodes_count(), k))
 
-        for h in range(initial_eigens_fixed):
+        for h in range(fixed_eigens):
             eigen_vec[:, h] = eigen_vects[:, h]
 
-        for h in range(initial_eigens_fixed, k):
-            eigen_vec[:, h] = eigen_vects[:, random_eigen_index[h]]
+        if eigens_calculate > fixed_eigens:
+            for h in range(fixed_eigens, k):
+                eigen_vec[:, h] = eigen_vects[:, random_eigen_index[h]]
 
         t_results, t_cluster_centroids, t_transformed_x = kmeans(eigen_vec, k)
 
@@ -119,19 +120,8 @@ def perform_spectral_clustering(graph: Graph,
 
         if obj_val < best_obj_val:
             best_obj_val = obj_val
-            cluster_nodes = cluster_nodes_t
+            cluster_nodes = copy.deepcopy(cluster_nodes_t)
             cluster_centroids = t_cluster_centroids
             transformed_x = t_transformed_x
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # results, cluster_centroids, transformed_x = kmeans(eigen_vectors, k)
-
-    # print("Finding the nodes cluster...\n")
-    # cluster_nodes = {}
-    # for node, cluster in enumerate(results):
-    #     if cluster not in cluster_nodes.keys():
-    #         cluster_nodes[cluster] = [node]
-    #     else:
-    #         cluster_nodes[cluster].append(node)
 
     return cluster_nodes, cluster_centroids, transformed_x
