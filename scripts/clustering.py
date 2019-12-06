@@ -50,7 +50,7 @@ def kmeans(vals, k, intialize_kmeans=False, graph=None, eigen_vectors=None):
         kmeans = KMeans(n_clusters=k, init=kmeans_initial, random_state=1)
 
     else:
-        kmeans = KMeans(n_clusters=k, n_init=20)
+        kmeans = KMeans(n_clusters=k)
 
     results = kmeans.fit_predict(vals)
     cluster_centroids = kmeans.cluster_centers_

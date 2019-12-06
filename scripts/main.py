@@ -76,17 +76,17 @@ if __name__ == '__main__':
     start_time = time.time()
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Parameteres
-    txt_file = "../../graphs_processed/soc-Epinions1.txt"
-    output_dir = "../../output/soc-Epinions1_test"
+    txt_file = "../graphs/ca-GrQc.txt"
+    output_dir = "../ca-GrQc_output"
 
-    laplacian_algo = ["SM", "SNL", "RWL", "UL"]  # SM, RWL, UL, SNL
-    normalize_eigen_vectors = [False, True]  # True, False
-    perform_greedy_algo = [False, True]  # True, False
+    laplacian_algo = ["SM"]  # SM, RWL, UL, SNL
+    normalize_eigen_vectors = [False]  # True, False
+    perform_greedy_algo = [False]  # True, False
     calculate_objective_value = True  # True, False
 
-    n_kmeans = 1
-    eigens_to_calculate = -1  # -1 means to calculate k eigen values
-    fixed_eigens = -1  # -1 means to set this to k
+    n_kmeans = 10
+    eigens_to_calculate = 6  # -1 means to calculate k eigen values
+    fixed_eigens = 0  # -1 means to set this to k
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
