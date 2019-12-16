@@ -1,6 +1,7 @@
 # Spectral_Graph_Analysis
 
-<b>Motivation:</b> The project was part of the course "Algorithmic methods of data-mining". More instructions about the projects can be found in the following <a href="Project_Instructions.pdf">file.</a>
+<b>Motivation:</b> The project was part of the course "Algorithmic methods of data-mining" at Aalto University, Finland as the part of Master's Programme.
+More instructions about the projects can be found in the following <a href="Project_Instructions.pdf">file.</a>
 
 ## Introduction
 
