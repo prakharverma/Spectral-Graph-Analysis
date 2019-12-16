@@ -1,8 +1,22 @@
 # Spectral_Graph_Analysis
 
-## Great things take time.
+<b>Motivation:</b> The project was part of the course "Algorithmic methods of data-mining". More instructions about the projects can be found in the following <a href="Project_Instructions.pdf">file.</a>
 
-### P.S. Coding is better than Documentation
+## Introduction
 
-## Project Partner:
-1. Swati Choudhary (https://github.com/swati2494)
+The project aims to perform a graph partitioning algorithm with the use of Spectral Clustering on social network graphs. The goal is to minimize the number of cuts while maintaining cluster size balance.
+
+## Data
+
+The graphs being used for the project are available at Stanford SNAP data.
+
+The following 5 graphs are being used for the analysis:
+
+• ca-GrQc
+• Oregon-1
+• soc-Epinions1
+• web-NotreDame
+• roadNet-CA
+
+## Objective function
+Graph partitioning is the task of splitting the vertices of a graph into k clusters or communities, V<sub>1</sub> ,..., V<sub>k</sub>, so that v<sub>i</sub> ∩ v<sub>j</sub> = φ in such a way that, there are maximum number of edges within each cluster and very few between the clusters. This is the objective function that we have to minimize.
