@@ -20,3 +20,14 @@ The following 5 graphs are being used for the analysis:
 
 ## Objective function
 Graph partitioning is the task of splitting the vertices of a graph into k clusters or communities, V<sub>1</sub> ,..., V<sub>k</sub>, so that v<sub>i</sub> ∩ v<sub>j</sub> = φ in such a way that, there are maximum number of edges within each cluster and very few between the clusters. This is the objective function that we have to minimize.
+
+## Run the code
+To run the code:
+
+1. Go to the script directory.
+2. Edit the "scripts/main.py" file with the parameters you would to run the script.
+3. Execute: "python3 main.py"
+
+## More details
+
+More details about the project, algorithms, and results can be found at <a href="Project_Report.pdf">project report</a>.
