@@ -1,4 +1,4 @@
-# Spectral_Graph_Analysis
+# Spectral Graph Analysis
 
 <b>Motivation:</b> The project was part of the course "Algorithmic methods of data-mining" at Aalto University, Finland as the part of Master's Programme.
 
