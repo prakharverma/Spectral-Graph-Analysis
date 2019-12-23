@@ -32,4 +32,4 @@ To run the code:
 
 ## More details
 
-More details about the project, algorithms, and results can be found at <a href="Project_Report.pdf">project report</a>.
+More details about the project, algorithms, and results can be found in <a href="Project_Report.pdf">project report</a>.
